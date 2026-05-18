@@ -1,0 +1,33 @@
+@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&family=Fredoka:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+@theme {
+  --font-nunito: "Nunito", sans-serif;
+  --font-fredoka: "Fredoka", sans-serif;
+  --font-jakarta: "Plus Jakarta Sans", sans-serif;
+
+  --color-primary: #a03a57;
+  --color-primary-container: #ff85a2;
+  --color-primary-fixed: #ffd9df;
+  --color-background: #fff8f7;
+  --color-surface-low: #fff0f1;
+  --color-surface-high: #f7e4e6;
+  --color-on-background: #23191b;
+  --color-on-surface: #23191b;
+
+  --radius-xl: 2.5rem;
+  --radius-2xl: 3rem;
+  --radius-3xl: 3.5rem;
+
+  --shadow-soft: 0 4px 24px rgba(0, 0, 0, 0.08);
+}
+
+@layer base {
+  body {
+    @apply bg-background font-nunito text-on-background antialiased;
+  }
+}
+
+.peel-container {
+  mask-image: linear-gradient(135deg, black 85%, transparent 100%);
+}
