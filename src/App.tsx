@@ -13,9 +13,18 @@ import {
   Tag,
   Search,
   Languages,
-  ChevronDown
+  ChevronDown,
+  Settings
 } from "lucide-react";
 import { useState, useRef, MouseEvent } from "react";
+import { 
+  WorkItem, 
+  CategoryItem, 
+  ICON_MAP, 
+  INITIAL_WORKS, 
+  INITIAL_CATEGORIES 
+} from "./types";
+import AdminPanel from "./components/AdminPanel";
 
 // Languages
 const LANGUAGES = [
@@ -99,171 +108,38 @@ const TRANSLATIONS: Record<string, any> = {
   }
 };
 
-// Mock Data
-const CATEGORIES = [
-  { id: 'all', tKey: 'allWorks', matchName: 'All', icon: Layout, count: 12 },
-  { id: 'branding', tKey: 'catBranding', matchName: 'Branding', icon: Palette, count: 4 },
-  { id: 'uiux', tKey: 'catUiUx', matchName: 'UI/UX Design', icon: Layers, count: 3 },
-  { id: 'illustration', tKey: 'catIllustration', matchName: 'Illustration', icon: Sparkles, count: 5 },
-];
-
-const WORKS = [
-  {
-    id: 1,
-    name: "Hot Stamping Brand Identity",
-    category: "Branding",
-    price: 9.99,
-    rating: 4.8,
-    reviews: 12,
-    image: "https://images.unsplash.com/photo-1626785774573-4b799315345d?auto=format&fit=crop&q=80&w=600",
-    gallery: [
-      "https://images.unsplash.com/photo-1626785774573-4b799315345d?auto=format&fit=crop&q=80&w=1200",
-      "https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?auto=format&fit=crop&q=80&w=1200",
-      "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&q=80&w=1200"
-    ],
-    bgColor: "bg-[#FFEAD2]",
-    tag: "Best Seller",
-    description: "A premium branding collection featuring hot stamping textures and elegant typography. Designed for luxury retail experiences.",
-    detailedDesc: "这个项目探索了传统工艺与现代数字美学的交集。在深色磨砂表面上使用铜和金箔纹理，我们创造了一个能与高端受众产生共鸣的触觉品牌形象。该方案包含完整的文具设计、数字资产以及印刷生产指南。"
-  },
-  {
-    id: 2,
-    name: "Geometric Interface Kit",
-    category: "UI/UX Design",
-    price: 5.99,
-    rating: 5.0,
-    reviews: 8,
-    image: "https://images.unsplash.com/photo-1558655146-d09347e92766?auto=format&fit=crop&q=80&w=600",
-    gallery: [
-      "https://images.unsplash.com/photo-1558655146-d09347e92766?auto=format&fit=crop&q=80&w=1200",
-      "https://images.unsplash.com/photo-1545235617-9465d2a55698?auto=format&fit=crop&q=80&w=1200"
-    ],
-    bgColor: "bg-[#E2F2FF]",
-    tag: "",
-    description: "Advanced component library with a focus on geometric precision and accessible interactions.",
-    detailedDesc: "专为速度和可扩展性而构建，该套件提供了 200 多个专为现代 SaaS 应用程序量身定制的组件。所有元素都是响应式的，并针对 Web 和移动平台进行了优化。"
-  },
-  {
-    id: 3,
-    name: "Soft Pastel Illustrations",
-    category: "Illustration",
-    price: 3.99,
-    rating: 4.5,
-    reviews: 15,
-    image: "https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?auto=format&fit=crop&q=80&w=600",
-    gallery: [
-      "https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?auto=format&fit=crop&q=80&w=1200",
-      "https://images.unsplash.com/photo-1605721911519-3dfeb3be25e7?auto=format&fit=crop&q=80&w=1200"
-    ],
-    bgColor: "bg-[#F3E5F5]",
-    tag: "New",
-    description: "Dreamy, character-focused illustrations using a soft pastel color palette.",
-    detailedDesc: "该系列捕捉了日常生活中转瞬即逝的魔法时刻。细腻的笔触和柔和的色调旨在唤起宁静和奇妙的感觉。非常适合儿童图书或专题报道。"
-  },
-  {
-    id: 4,
-    name: "Minimalist Poster Pack",
-    category: "Illustration",
-    price: 12.50,
-    rating: 4.9,
-    reviews: 24,
-    image: "https://images.unsplash.com/photo-1513519245088-0e12902e35a6?auto=format&fit=crop&q=80&w=600",
-    gallery: [
-      "https://images.unsplash.com/photo-1513519245088-0e12902e35a6?auto=format&fit=crop&q=80&w=1200",
-      "https://images.unsplash.com/photo-1502472544832-76378951f28b?auto=format&fit=crop&q=80&w=1200"
-    ],
-    bgColor: "bg-[#E8F5E9]",
-    tag: "Popular",
-    description: "A set of high-resolution posters focusing on negative space and simple forms.",
-    detailedDesc: "少即是多。这个系列包含 20 种独特的设计，剥离非本质的东西，展示简单形状的核心美感。现代办公空间或工作室装饰的理想选择。"
-  },
-  {
-    id: 5,
-    name: "Coffee Shop Branding",
-    category: "Branding",
-    price: 15.00,
-    rating: 4.7,
-    reviews: 10,
-    image: "https://images.unsplash.com/photo-1559056191-4917a2dc2dfc?auto=format&fit=crop&q=80&w=600",
-    gallery: [
-      "https://images.unsplash.com/photo-1559056191-4917a2dc2dfc?auto=format&fit=crop&q=80&w=1200",
-      "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&q=80&w=1200"
-    ],
-    bgColor: "bg-[#D7CCC8]",
-    tag: "",
-    description: "Complete identity work for a boutique coffee roaster, from logo to cup packaging.",
-    detailedDesc: "我们的咖啡馆品牌设计专注于阳光烘干咖啡豆的温暖感。我们使用了土地色调和手写字体，营造出一种迷人的手工艺感，在拥挤的市场中脱颖而出。"
-  },
-  {
-    id: 6,
-    name: "3D Icon Set",
-    category: "Illustration",
-    price: 8.99,
-    rating: 4.9,
-    reviews: 32,
-    image: "https://images.unsplash.com/photo-1614850523296-e8c041de43a2?auto=format&fit=crop&q=80&w=600",
-    gallery: [
-      "https://images.unsplash.com/photo-1614850523296-e8c041de43a2?auto=format&fit=crop&q=80&w=1200",
-      "https://images.unsplash.com/photo-1620336655055-088d06e76fd0?auto=format&fit=crop&q=80&w=1200"
-    ],
-    bgColor: "bg-[#FFF9C4]",
-    tag: "Featured",
-    description: "Glossy, high-detail 3D icons for modern app interfaces.",
-    detailedDesc: "这些图标采用逼真的光影和物理材料渲染。它们为任何后台界面或着陆页设计增添了俏皮而精致的触感。"
-  },
-  {
-    id: 7,
-    name: "Organic Pattern Library",
-    category: "Branding",
-    price: 7.50,
-    rating: 4.6,
-    reviews: 5,
-    image: "https://images.unsplash.com/photo-1550684848-fac1c5b4e853?auto=format&fit=crop&q=80&w=600",
-    bgColor: "bg-[#F1F8E9]",
-    tag: "",
-    description: "A collection of hand-drawn patterns inspired by natural textures.",
-    detailedDesc: "这组图案旨在为品牌设计带来自然、有机的感觉。适用于包装、背景纹理及纺织品印花。"
-  },
-  {
-    id: 8,
-    name: "Tech Startup Website",
-    category: "UI/UX Design",
-    price: 25.00,
-    rating: 4.8,
-    reviews: 18,
-    image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&q=80&w=600",
-    bgColor: "bg-[#E3F2FD]",
-    tag: "",
-    description: "Landing page and dashboard design for a cloud computing platform.",
-    detailedDesc: "强调技术感与易用性的平衡。采用了深色模式与霓虹色调的点缀，展现前卫的科技品牌形象。"
-  },
-  {
-    id: 9,
-    name: "Editorial Magazine Layout",
-    category: "Branding",
-    price: 18.00,
-    rating: 4.9,
-    reviews: 9,
-    image: "https://images.unsplash.com/photo-1544476072-be6b70502421?auto=format&fit=crop&q=80&w=600",
-    bgColor: "bg-[#FAFAFA]",
-    tag: "Design Choice",
-    description: "Multi-page layout system for a fashion and art publication.",
-    detailedDesc: "大面积的留白与精致的衬线体运用，使整本杂志充满高级感与艺术气息。"
-  },
-  {
-    id: 10,
-    name: "Character Sketchbook",
-    category: "Illustration",
-    price: 4.50,
-    rating: 4.7,
-    reviews: 11,
-    image: "https://images.unsplash.com/photo-1513364776144-60967b0f800f?auto=format&fit=crop&q=80&w=600",
-    bgColor: "bg-[#FFF3E0]",
-    tag: "",
-    description: "A variety of expressive character studies in various styles.",
-    detailedDesc: "记录了上百个角色的创作原型方案，是动画与游戏角色设计的灵感库。"
+// Helper functions for localized content resolution
+const getWorkName = (work: WorkItem, lang: string) => {
+  if (work.names && work.names[lang as keyof typeof work.names]) {
+    return work.names[lang as keyof typeof work.names]!;
   }
-];
+  return work.name;
+};
+
+const getWorkDesc = (work: WorkItem, lang: string) => {
+  if (work.descriptions && work.descriptions[lang as keyof typeof work.descriptions]) {
+    return work.descriptions[lang as keyof typeof work.descriptions]!;
+  }
+  return work.description;
+};
+
+const getWorkDetailedDesc = (work: WorkItem, lang: string) => {
+  if (work.detailedDescs && work.detailedDescs[lang as keyof typeof work.detailedDescs]) {
+    return work.detailedDescs[lang as keyof typeof work.detailedDescs]!;
+  }
+  return work.detailedDesc;
+};
+
+const getCategoryName = (cat: CategoryItem, lang: string) => {
+  if (cat.names && cat.names[lang as keyof typeof cat.names]) {
+    return cat.names[lang as keyof typeof cat.names]!;
+  }
+  const tStr = TRANSLATIONS[lang];
+  if (tStr && tStr[cat.tKey]) {
+    return tStr[cat.tKey];
+  }
+  return cat.matchName;
+};
 
 export default function App() {
   const [selectedLanguage, setSelectedLanguage] = useState("zh");
@@ -274,20 +150,58 @@ export default function App() {
   const [showMagnifier, setShowMagnifier] = useState(false);
   const [[imgX, imgY], setImgXY] = useState([0, 0]);
   const [[cursorX, cursorY], setCursorXY] = useState([0, 0]);
-  
+
+  // Admin Panel states
+  const [isAdminOpen, setIsAdminOpen] = useState(false);
+  const [works, setWorks] = useState<WorkItem[]>(() => {
+    const saved = localStorage.getItem("sticker_works_v25");
+    return saved ? JSON.parse(saved) : INITIAL_WORKS;
+  });
+
+  const [categories, setCategories] = useState<CategoryItem[]>(() => {
+    const saved = localStorage.getItem("sticker_categories_v25");
+    return saved ? JSON.parse(saved) : INITIAL_CATEGORIES;
+  });
+
   const containerRef = useRef<HTMLDivElement>(null);
 
   const t = TRANSLATIONS[selectedLanguage];
   const isRTL = LANGUAGES.find(l => l.code === selectedLanguage)?.dir === 'rtl';
 
-  const filteredWorks = WORKS.filter(work => {
+  const handleSaveWorks = (newWorks: WorkItem[]) => {
+    setWorks(newWorks);
+    localStorage.setItem("sticker_works_v25", JSON.stringify(newWorks));
+  };
+
+  const handleSaveCategories = (newCats: CategoryItem[]) => {
+    setCategories(newCats);
+    localStorage.setItem("sticker_categories_v25", JSON.stringify(newCats));
+  };
+
+  const handleResetToDefaults = () => {
+    // Completely clear customized values and restart pristine datasets
+    setWorks(INITIAL_WORKS);
+    setCategories(INITIAL_CATEGORIES);
+    localStorage.removeItem("sticker_works_v25");
+    localStorage.removeItem("sticker_categories_v25");
+    setSelectedCategory("all");
+    setSelectedWorkId(null);
+  };
+
+  // Dynamic counts calculations
+  const categoriesWithCounts = categories.map(cat => ({
+    ...cat,
+    count: works.filter(w => cat.id === 'all' || w.category === cat.matchName).length
+  }));
+
+  const filteredWorks = works.filter(work => {
     if (selectedCategory === "all") return true;
-    const cat = CATEGORIES.find(c => c.id === selectedCategory);
+    const cat = categories.find(c => c.id === selectedCategory);
     return work.category === cat?.matchName;
   });
 
-  const selectedWork = WORKS.find(w => w.id === selectedWorkId);
-  const recommendations = WORKS.filter(w => w.category === selectedWork?.category && w.id !== selectedWorkId).slice(0, 4);
+  const selectedWork = works.find(w => w.id === selectedWorkId);
+  const recommendations = works.filter(w => w.category === selectedWork?.category && w.id !== selectedWorkId).slice(0, 4);
 
   const handleOpenDetail = (workId: number) => {
     setSelectedWorkId(workId);
@@ -310,11 +224,22 @@ export default function App() {
 
   return (
     <div 
-      className="min-h-screen bg-background selection:bg-primary selection:text-white pb-20 relative"
+      className="min-h-screen bg-background selection:bg-primary selection:text-white pb-20 relative font-jakarta"
       dir={isRTL ? 'rtl' : 'ltr'}
     >
-      {/* Language Switcher */}
-      <div className={`fixed top-6 z-[110] ${isRTL ? 'left-6 md:left-12' : 'right-6 md:right-12'}`}>
+      {/* Utilities Container (Language Switcher & Admin Button) */}
+      <div className={`fixed top-6 z-[110] flex items-center gap-3 ${isRTL ? 'left-6 md:left-12' : 'right-6 md:right-12'}`}>
+        {/* Minimalist modern Admin workspace button */}
+        <button
+          onClick={() => setIsAdminOpen(true)}
+          className="flex items-center gap-2 bg-slate-900 border border-slate-800 text-white hover:bg-black px-4 py-2 rounded-2xl shadow-soft hover:shadow-lg transition-all font-bold text-xs"
+          title="管理后台/Admin Panel"
+        >
+          <Settings size={15} className="text-primary animate-spin-slow" />
+          <span className="hidden sm:inline">工作台管理</span>
+        </button>
+
+        {/* Language Switcher */}
         <div className="relative">
           <button 
             onClick={() => setIsLangOpen(!isLangOpen)}
@@ -401,27 +326,28 @@ export default function App() {
                     <p className="text-[11px] uppercase tracking-widest text-slate-400 font-black mt-1">{t.exploreSub}</p>
                     
                     <div className="mt-6 space-y-1.5 font-jakarta">
-                      {CATEGORIES.map((cat) => (
-                        <button
-                          key={cat.id}
-                          onClick={() => setSelectedCategory(cat.id)}
-                          className={`w-full flex items-center justify-between px-4 py-3 rounded-2xl font-bold text-sm transition-all group ${
-                            selectedCategory === cat.id 
-                            ? 'bg-surface-low text-primary' 
-                            : 'text-slate-600 hover:bg-surface-low hover:text-primary'
-                          }`}
-                        >
-                          <span className={`flex items-center gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
-                            <cat.icon size={18} className={selectedCategory === cat.id ? 'text-primary' : 'text-slate-400 group-hover:text-primary'} />
-                            {t[cat.tKey]}
-                          </span>
-                          <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${
-                            selectedCategory === cat.id ? 'bg-white text-primary shadow-sm' : 'bg-slate-50 text-slate-400'
-                          }`}>
-                            {cat.count}
-                          </span>
-                        </button>
-                      ))}
+                      {categoriesWithCounts.map((cat) => {
+                        return (
+                          <button
+                            key={cat.id}
+                            onClick={() => setSelectedCategory(cat.id)}
+                            className={`w-full flex items-center justify-between px-4 py-3 rounded-2xl font-bold text-sm transition-all group ${
+                              selectedCategory === cat.id 
+                              ? 'bg-surface-low text-primary' 
+                              : 'text-slate-600 hover:bg-surface-low hover:text-primary'
+                            }`}
+                          >
+                            <span className={`flex items-center gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
+                              {getCategoryName(cat, selectedLanguage)}
+                            </span>
+                            <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${
+                              selectedCategory === cat.id ? 'bg-white text-primary shadow-sm' : 'bg-slate-50 text-slate-400'
+                            }`}>
+                              {cat.count}
+                            </span>
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
                 </aside>
@@ -439,16 +365,16 @@ export default function App() {
                         onClick={() => handleOpenDetail(work.id)}
                         className="group bg-white p-4 rounded-[2rem] border border-slate-100 shadow-soft flex flex-col hover:shadow-2xl transition-all duration-500 cursor-pointer"
                       >
-                        <div className={`relative aspect-square rounded-2xl overflow-hidden mb-5 ${work.bgColor}`}>
+                        <div className="relative aspect-square rounded-2xl overflow-hidden mb-5 bg-[#fafafa] border border-slate-100/50">
                           <img 
                             src={work.image} 
-                            alt={work.name} 
+                            alt={getWorkName(work, selectedLanguage)} 
                             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
                           />
                         </div>
                         <div className="px-2 flex flex-col flex-1 pb-2">
                           <h4 className="font-fredoka font-black text-lg text-on-background group-hover:text-primary transition-colors">
-                            {work.name}
+                            {getWorkName(work, selectedLanguage)}
                           </h4>
                         </div>
                       </motion.div>
@@ -488,7 +414,7 @@ export default function App() {
                   onMouseEnter={() => setShowMagnifier(true)}
                   onMouseLeave={() => setShowMagnifier(false)}
                   onMouseMove={handleMouseMove}
-                  className={`relative aspect-square rounded-[3rem] overflow-hidden border border-slate-100 shadow-xl group cursor-crosshair ${selectedWork.bgColor}`}
+                  className="relative aspect-square rounded-[3rem] overflow-hidden border border-slate-100 shadow-xl group cursor-crosshair bg-[#fafafa]"
                 >
                    <AnimatePresence mode="wait">
                     <motion.img 
@@ -498,7 +424,7 @@ export default function App() {
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
                       className="w-full h-full object-cover p-12 select-none"
-                      alt={selectedWork.name}
+                      alt={getWorkName(selectedWork, selectedLanguage)}
                     />
                    </AnimatePresence>
 
@@ -588,16 +514,16 @@ export default function App() {
               {/* Info Area */}
               <div className="w-full max-w-3xl space-y-16">
                 <div className="space-y-6 text-center">
-                  <h1 className="font-fredoka font-black text-5xl md:text-6xl text-on-background leading-tight">{selectedWork.name}</h1>
+                  <h1 className="font-fredoka font-black text-5xl md:text-6xl text-on-background leading-tight">{getWorkName(selectedWork, selectedLanguage)}</h1>
                   <p className="text-xl text-slate-600 leading-relaxed font-jakarta font-medium max-w-2xl mx-auto">
-                    {selectedWork.description}
+                    {getWorkDesc(selectedWork, selectedLanguage)}
                   </p>
                 </div>
 
                 <div className="space-y-8 pt-16 border-t border-slate-100">
                   <h3 className="font-fredoka font-black text-3xl text-on-background">{t.detailsTitle}</h3>
                   <div className="font-jakarta text-lg text-slate-500 leading-relaxed prose prose-slate max-w-none">
-                    {selectedWork.detailedDesc}
+                    {getWorkDetailedDesc(selectedWork, selectedLanguage)}
                   </div>
                 </div>
               </div>
@@ -614,16 +540,30 @@ export default function App() {
                       onClick={() => handleOpenDetail(rec.id)}
                       className="group bg-white p-5 rounded-[2.5rem] border border-slate-100 shadow-soft hover:shadow-2xl transition-all cursor-pointer"
                     >
-                      <div className={`aspect-square rounded-[2rem] overflow-hidden mb-6 ${rec.bgColor}`}>
+                      <div className="aspect-square rounded-[2rem] overflow-hidden mb-6 bg-[#fafafa] border border-slate-100/50">
                         <img src={rec.image} className="w-full h-full object-cover transition-transform group-hover:scale-110" alt="" />
                       </div>
-                      <h3 className="font-fredoka font-black text-lg px-2 group-hover:text-primary transition-colors text-on-background">{rec.name}</h3>
+                      <h3 className="font-fredoka font-black text-lg px-2 group-hover:text-primary transition-colors text-on-background">{getWorkName(rec, selectedLanguage)}</h3>
                     </div>
                   ))}
                 </div>
               </section>
             )}
           </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Administration Workspace Control Panel */}
+      <AnimatePresence>
+        {isAdminOpen && (
+          <AdminPanel
+            works={works}
+            categories={categories}
+            onSaveWorks={handleSaveWorks}
+            onSaveCategories={handleSaveCategories}
+            onResetToDefaults={handleResetToDefaults}
+            onClose={() => setIsAdminOpen(false)}
+          />
         )}
       </AnimatePresence>
     </div>
